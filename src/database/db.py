@@ -1,8 +1,9 @@
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from ..settings import settings
+from settings import settings
 
 engine: AsyncEngine | None = None
 AsyncSessionLocal: sessionmaker | None = None
@@ -50,6 +51,18 @@ async def close_db() -> None:
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    if AsyncSessionLocal is None:
+        raise RuntimeError("Database is not initialized")
+
+    async with AsyncSessionLocal() as db:
+        yield db
+
+
+@asynccontextmanager
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+    if AsyncSessionLocal is None:
+        raise RuntimeError("Database is not initialized")
+
     async with AsyncSessionLocal() as db:
         yield db
 
