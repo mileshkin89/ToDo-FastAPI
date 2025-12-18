@@ -36,7 +36,11 @@ async def register(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already registered")
 
     hashed_password = pwd_context.hash(user.password)
-    user_db = User(email=user.email, name=user.name, hashed_password=hashed_password)
+    user_db = User(
+        email=user.email,
+        name=user.name,
+        hashed_password=hashed_password
+    )
 
     db.add(user_db)
     await db.commit()

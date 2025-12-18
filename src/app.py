@@ -5,6 +5,7 @@ from fastapi import FastAPI, Depends
 from apps.auth.dependencies import get_current_user
 from apps.auth.models import User
 from apps.auth.routes import user_router, auth_router
+from apps.task.routes import task_router
 from database.db import init_db, close_db, init_engine
 
 
@@ -26,9 +27,10 @@ app = FastAPI(
 api_version_prefix = "/api/v1"
 app.include_router(user_router, prefix=f"{api_version_prefix}", tags=["users"])
 app.include_router(auth_router, prefix=f"{api_version_prefix}/auth", tags=["auth"])
+app.include_router(task_router, prefix=f"{api_version_prefix}", tags=["tasks"])
 
 
-@app.get("/")
+@app.get("/", tags=["root"])
 async def read_root():
     return {"message": "ToDo API is running"}
 
