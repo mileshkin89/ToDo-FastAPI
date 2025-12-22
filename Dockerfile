@@ -10,7 +10,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         gcc \
         libpq-dev \
-        netcat-openbsd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

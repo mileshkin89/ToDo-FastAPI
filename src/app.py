@@ -6,14 +6,11 @@ from apps.auth.dependencies import get_current_user
 from apps.auth.models import User
 from apps.auth.routes import user_router, auth_router
 from apps.task.routes import task_router
-from database.db import init_db, close_db, init_engine
+from database.db import close_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_engine()
-    await init_db()
-    print("Database initialized")
     yield
     await close_db()
 

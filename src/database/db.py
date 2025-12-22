@@ -1,43 +1,14 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from settings import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 
-engine: AsyncEngine | None = None
-AsyncSessionLocal: sessionmaker | None = None
+from database import engine, AsyncSessionLocal
 
 
 class Base(DeclarativeBase):
     pass
-
-
-def init_engine() -> None:
-    global engine, AsyncSessionLocal
-
-    db_url = settings.database_url
-
-    if db_url.startswith("sqlite"):
-        engine = create_async_engine(
-            db_url,
-            connect_args={"check_same_thread": False},
-            echo=True,
-        )
-    else:
-        engine = create_async_engine(
-            db_url,
-            echo=True,
-            future=True,
-            pool_pre_ping=True,
-            pool_recycle=300,
-        )
-
-    AsyncSessionLocal = sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
 
 
 # Database dependencies
@@ -59,7 +30,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 @asynccontextmanager
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_db_context_manager() -> AsyncGenerator[AsyncSession, None]:
     if AsyncSessionLocal is None:
         raise RuntimeError("Database is not initialized")
 
