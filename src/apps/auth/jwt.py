@@ -1,4 +1,6 @@
-from datetime import datetime as dt, timedelta
+from datetime import datetime as dt
+from datetime import timedelta
+
 import jwt
 from fastapi import HTTPException
 
@@ -31,11 +33,11 @@ def verify_access_token(token: str):
         )
         return payload
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
+        raise HTTPException(status_code=401, detail="Token expired") from None
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token") from None
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Token validation failed. Unexpected error: {e}")
+        raise HTTPException(status_code=401, detail="Access token validation failed.") from e
 
 
 def verify_refresh_token(token: str):
@@ -48,8 +50,8 @@ def verify_refresh_token(token: str):
         )
         return payload
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Refresh token expired")
+        raise HTTPException(status_code=401, detail="Refresh token expired") from None
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Refresh token expired")
+        raise HTTPException(status_code=401, detail="Invalid refresh token") from None
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Token validation failed. Unexpected error: {e}")
+        raise HTTPException(status_code=401, detail="Refresh token validation failed.") from e

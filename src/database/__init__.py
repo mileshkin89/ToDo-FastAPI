@@ -10,7 +10,7 @@ if async_db_url.startswith("sqlite"):
     engine: AsyncEngine = create_async_engine(
         async_db_url,
         connect_args={"check_same_thread": False},
-        echo=True,
+        echo=False,
     )
 else:
     engine: AsyncEngine = create_async_engine(

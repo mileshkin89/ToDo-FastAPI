@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
-from database import engine, AsyncSessionLocal
+from database import AsyncSessionLocal, engine
 
 
 class Base(DeclarativeBase):
@@ -30,7 +30,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 @asynccontextmanager
-async def get_db_context_manager() -> AsyncGenerator[AsyncSession, None]:
+async def get_db_contextmanager() -> AsyncGenerator[AsyncSession, None]:
     if AsyncSessionLocal is None:
         raise RuntimeError("Database is not initialized")
 

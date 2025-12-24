@@ -1,5 +1,6 @@
 from fastapi import Response
 
+
 def set_refresh_token_cookie(
         response: Response,
         refresh_token: str

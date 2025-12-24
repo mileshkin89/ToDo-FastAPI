@@ -1,17 +1,17 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Query
-from fastapi import Path, Depends, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from database.db import get_db
-from .dependencies import get_task_by_id
-from .models import Task
-from .schemas import TaskCreate, TaskUpdate, TaskResponse, TaskListResponse
 from apps.auth.dependencies import get_current_user
 from apps.auth.models import User
+from database.db import get_db
+
+from .dependencies import get_task_by_id
+from .models import Task
+from .schemas import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
 
 task_router = APIRouter()
 
@@ -25,7 +25,7 @@ async def task_list(
         skip: int = Query(0, ge=0, description="Skip N records"),
         limit: int = Query(10, ge=1, le=100, description="Record limit"),
         sort_by: str = Query("created_at", description="Sorting field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sorting order"),
+        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sorting order"),
 ):
     # Base request
     stmt = select(Task).where(Task.user_id == current_user.id)
@@ -56,7 +56,6 @@ async def task_list(
     result = await db.execute(stmt)
     tasks = result.scalars().all()
     total = len(tasks)
-    # total = tasks.count()
 
     return TaskListResponse(
         tasks=tasks,

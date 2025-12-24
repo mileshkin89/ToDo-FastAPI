@@ -1,4 +1,4 @@
-from fastapi import Path, Depends, HTTPException
+from fastapi import Depends, HTTPException, Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status

@@ -4,8 +4,9 @@ from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from settings import settings
 from database.db import get_db
+from settings import settings
+
 from .jwt import verify_access_token
 from .models import User
 
@@ -65,7 +66,15 @@ async def authenticate_user(
 ):
     user_db = await get_user_by_email(email, db)
     if not user_db:
-        return False
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if not pwd_context.verify(password, user_db.hashed_password):
-        return False
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return user_db

@@ -1,15 +1,25 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Response, Cookie
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from apps.auth.dependencies import pwd_context, authenticate_user, get_user_by_id, get_current_user, get_user_by_email
-from apps.auth.jwt import create_access_token, create_refresh_token, verify_refresh_token
+from apps.auth.dependencies import (
+    authenticate_user,
+    get_current_user,
+    get_user_by_email,
+    get_user_by_id,
+    pwd_context,
+)
+from apps.auth.jwt import (
+    create_access_token,
+    create_refresh_token,
+    verify_refresh_token,
+)
 from apps.auth.models import User
-from apps.auth.schemas import UserListResponse, UserResponse, Token, UserCreate
+from apps.auth.schemas import Token, UserCreate, UserListResponse, UserResponse
 from apps.auth.utils import set_refresh_token_cookie
 from database.db import get_db
 
@@ -57,13 +67,6 @@ async def login(
 ):
     user_db = await authenticate_user(form_data.username, form_data.password, db)
 
-    if not user_db:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
     access_token = create_access_token(data={"sub": str(user_db.id)})
     refresh_token = create_refresh_token(data={"sub": str(user_db.id)})
 
@@ -92,14 +95,8 @@ async def refresh_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    try:
-        payload = verify_refresh_token(refresh_token)
-        user_id: int = int(payload.get("sub"))
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token",
-        )
+    payload = verify_refresh_token(refresh_token)
+    user_id: int = int(payload.get("sub"))
 
     user_db = await get_user_by_id(user_id, db)
 

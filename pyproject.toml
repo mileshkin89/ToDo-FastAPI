@@ -1,9 +1,10 @@
 [project]
-name = "smart-todo-fastapi"
+name = "todo-fastapi"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
     "aiosqlite>=0.22.0",
     "asyncpg>=0.31.0",
@@ -18,4 +19,59 @@ dependencies = [
     "pyjwt>=2.10.1",
     "psycopg2-binary>=2.9.11",
     "alembic>=1.17.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-env>=1.2.0",
+    "httpx>=0.28.1",
+    "pre-commit",
+    "ruff",
+    "pytest-asyncio",
+]
+
+[tool.ruff]
+src = ["src"]
+exclude = [
+    "src/**/__init__.py",
+    "src/**/migrations/**",
+    "tests/data/**",
+]
+lint.select = ["E", "F", "I", "C", "B", "Q"]
+lint.ignore = ["E501", "B008", "F821"]
+line-length = 88
+target-version = "py311"
+fix = true
+
+[tool.pytest.ini_options]
+addopts = "-v --tb=short"
+testpaths = ["src/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "asyncio: mark test as asyncio test",
+    "slow: slow running test",
+    "integration: integration test",
+]
+env = "ENVIRONMENT=testing"
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__pycache__/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:"
 ]

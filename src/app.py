@@ -1,10 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 
 from apps.auth.dependencies import get_current_user
 from apps.auth.models import User
-from apps.auth.routes import user_router, auth_router
+from apps.auth.routes import auth_router, user_router
 from apps.task.routes import task_router
 from database.db import close_db
 
@@ -22,8 +22,9 @@ app = FastAPI(
 )
 
 api_version_prefix = "/api/v1"
+auth_prefix = "/auth"
 app.include_router(user_router, prefix=f"{api_version_prefix}", tags=["users"])
-app.include_router(auth_router, prefix=f"{api_version_prefix}/auth", tags=["auth"])
+app.include_router(auth_router, prefix=f"{api_version_prefix}{auth_prefix}", tags=["auth"])
 app.include_router(task_router, prefix=f"{api_version_prefix}", tags=["tasks"])
 
 
@@ -36,6 +37,6 @@ async def read_root():
 async def protected_route(current_user: User = Depends(get_current_user)):
     return {
         "message": "This is a protected route",
-        "user_name": current_user.name,
+        "user_email": current_user.email,
         "user_id": current_user.id
     }
