@@ -13,6 +13,13 @@ class Environment(str, Enum):
     PRODUCTION = "production"
 
 
+def get_env_file() -> str:
+    environment = os.getenv("ENVIRONMENT", Environment.DEVELOPMENT)
+    if environment == Environment.TESTING:
+        return str(BASE_DIR / ".env.test")
+    return str(BASE_DIR / ".env")
+
+
 class Settings(BaseSettings):
     # PostgreSQL / Database
     POSTGRES_DB: str
@@ -38,7 +45,7 @@ class Settings(BaseSettings):
 
     # Pydantic configuration
     model_config = SettingsConfigDict(
-        env_file=str(BASE_DIR / os.getenv("ENV_FILE", ".env")),
+        env_file=get_env_file(),
         env_file_encoding="utf-8",
         extra="ignore"
     )
