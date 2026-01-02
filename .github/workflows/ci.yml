@@ -42,6 +42,11 @@ jobs:
         run: |
           uv run pre-commit run --all-files
 
+      - name: Set test environment
+        run: |
+          echo "ENV_FILE=src/.env.test" >> $GITHUB_ENV
+          echo "ENVIRONMENT=testing" >> $GITHUB_ENV
+
       - name: Run tests with coverage
         env:
           ENVIRONMENT: test
