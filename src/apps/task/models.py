@@ -14,6 +14,10 @@ class Task(Base):
     description: Mapped[str | None] = mapped_column(default=None)
     completed: Mapped[bool] = mapped_column(default=False)
 
+    start_at: Mapped[datetime | None] = mapped_column(default=None)
+    completed_at: Mapped[datetime | None] = mapped_column(default=None)
+    due_date: Mapped[datetime | None] = mapped_column(default=None)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

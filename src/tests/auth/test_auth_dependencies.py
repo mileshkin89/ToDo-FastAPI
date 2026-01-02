@@ -102,7 +102,7 @@ async def test_authenticate_user_user_not_found(
 
 
 @app.get("/test-current-user")
-async def test_current_user_endpoint(
+async def _test_current_user_endpoint(
         current_user: User = Depends(get_current_user),
 ):
     return {

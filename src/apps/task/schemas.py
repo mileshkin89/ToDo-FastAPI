@@ -9,11 +9,15 @@ class TaskCreate(BaseModel):
     title: str = Field(max_length=150)
     description: str | None = Field(default=None, max_length=500)
     completed: bool = Field(default=False)
+    start_at: datetime | None = Field(default=None)
+    due_date: datetime | None = Field(default=None)
 
 
 class TaskUpdate(BaseModel):
     title: str | None = Field(default=None, max_length=150)
     description: str | None = Field(default=None, max_length=500)
+    start_at: datetime | None = Field(default=None)
+    due_date: datetime | None = Field(default=None)
 
 
 class TaskResponse(BaseModel):
@@ -23,6 +27,9 @@ class TaskResponse(BaseModel):
     completed: bool
     created_at: datetime
     updated_at: datetime
+    start_at: datetime | None
+    completed_at: datetime | None
+    due_date: datetime | None
 
     user: UserResponse | None
 

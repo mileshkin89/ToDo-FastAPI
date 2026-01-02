@@ -5,6 +5,8 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from apps.analytics.cache import AnalyticsCacheInvalidator
+from apps.analytics.dependencies import get_cache_invalidator
 from apps.auth.dependencies import get_current_user
 from apps.auth.models import User
 from database.db import get_db
@@ -72,7 +74,8 @@ async def task_list(
 async def create_task(
         task: TaskCreate,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
     task_db = Task(
         title=task.title,
@@ -83,6 +86,8 @@ async def create_task(
     db.add(task_db)
     await db.commit()
     await db.refresh(task_db)
+
+    await cache_invalidator.invalidate_user(task_db.user_id)
 
     return task_db
 
@@ -99,17 +104,29 @@ async def update_task(
         task_up: TaskUpdate,
         db: AsyncSession = Depends(get_db),
         task: Task = Depends(get_task_by_id),
+        cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
+    flag = False
     if task_up.title is not None:
         task.title = task_up.title
+        flag = True
     if task_up.description is not None:
         task.description = task_up.description
+        flag = True
+    if task_up.due_date is not None:
+        task.due_date = task_up.due_date
+        flag = True
+    if task_up.start_at is not None:
+        task.start_at = task_up.start_at
+        flag = True
 
-    if task_up.title is not None or task_up.description is not None:
+    if flag:
         task.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
         await db.refresh(task)
+
+        await cache_invalidator.invalidate_user(task.user_id)
 
     return task
 
@@ -118,12 +135,16 @@ async def update_task(
 async def toggle_task(
         db: AsyncSession = Depends(get_db),
         task: Task = Depends(get_task_by_id),
+        cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
     task.completed = not task.completed
-    task.updated_at = datetime.now(timezone.utc)
+    task.completed_at = datetime.utcnow() if task.completed else None
+    task.updated_at = datetime.utcnow()
 
     await db.commit()
     await db.refresh(task)
+
+    await cache_invalidator.invalidate_user(task.user_id)
 
     return task
 
@@ -132,6 +153,9 @@ async def toggle_task(
 async def delete_task(
         db: AsyncSession = Depends(get_db),
         task: Task = Depends(get_task_by_id),
+        cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
     await db.delete(task)
     await db.commit()
+
+    await cache_invalidator.invalidate_user(task.user_id)

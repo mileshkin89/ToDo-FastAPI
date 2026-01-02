@@ -13,6 +13,7 @@ from apps.auth.jwt import create_access_token
 from apps.auth.models import User
 from apps.task.models import Task
 from database.db import close_db, get_db_contextmanager, reset_db
+from infrastructure.redis.client import get_redis
 from settings import settings
 
 
@@ -113,4 +114,36 @@ def pwd_context():
     return CryptContext(schemes=[settings.CRYPT_CONTEXT], deprecated="auto")
 
 
+class FakeRedis:
+    """
+    Lightweight Redis stub used in tests to replace the real Redis client.
+    Provides only the minimal interface required by the application code.
+    """
 
+    def __init__(self):
+        self._keys: set[str] = set()
+
+    async def scan_iter(self, match: str | None = None, count: int = 100):
+        if False:
+            yield None
+
+    async def delete(self, *keys):
+        return len(keys)
+
+    async def close(self):
+        pass
+
+
+@pytest.fixture(autouse=True)
+def override_redis():
+    """
+    Automatically override the `get_redis` dependency with a fake Redis
+    implementation for all tests, preventing access to a real Redis instance.
+    """
+
+    async def _get_fake_redis():
+        yield FakeRedis()
+
+    app.dependency_overrides[get_redis] = _get_fake_redis
+    yield
+    app.dependency_overrides.pop(get_redis, None)

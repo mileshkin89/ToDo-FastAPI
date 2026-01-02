@@ -20,6 +20,8 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "alembic>=1.17.2",
     "faker>=39.0.0",
+    "redis[hiredis]>=7.1.0",
+    "tqdm>=4.67.1",
 ]
 
 [project.optional-dependencies]
