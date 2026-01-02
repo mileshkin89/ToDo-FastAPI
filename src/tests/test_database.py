@@ -57,7 +57,7 @@ async def test_reset_db_drops_and_recreates_tables():
 
         from settings import settings
 
-        pwd_context = CryptContext(schemes=[settings.CRYPT_CONTEXT], deprecated="auto")
+        pwd_context = CryptContext(schemes=[settings.PASSWORD_HASH_SCHEME], deprecated="auto")
 
         user = User(
             email="test@example.com",

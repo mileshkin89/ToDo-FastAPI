@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import or_, select
@@ -106,26 +106,15 @@ async def update_task(
         task: Task = Depends(get_task_by_id),
         cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
-    flag = False
-    if task_up.title is not None:
-        task.title = task_up.title
-        flag = True
-    if task_up.description is not None:
-        task.description = task_up.description
-        flag = True
-    if task_up.due_date is not None:
-        task.due_date = task_up.due_date
-        flag = True
-    if task_up.start_at is not None:
-        task.start_at = task_up.start_at
-        flag = True
+    update_data = task_up.model_dump(exclude_unset=True)
 
-    if flag:
-        task.updated_at = datetime.now(timezone.utc)
+    for key, value in update_data.items():
+        setattr(task, key, value)
 
+    if update_data:
+        task.updated_at = datetime.utcnow()
         await db.commit()
         await db.refresh(task)
-
         await cache_invalidator.invalidate_user(task.user_id)
 
     return task

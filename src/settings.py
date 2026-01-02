@@ -21,6 +21,8 @@ def get_env_file() -> str:
 
 
 class Settings(BaseSettings):
+    PASSWORD_HASH_SCHEME: str = "argon2"
+
     # PostgreSQL / Database
     POSTGRES_DB: str
     POSTGRES_DB_PORT: int
@@ -34,9 +36,6 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-
-    # Password hashing
-    CRYPT_CONTEXT: str
 
     # Redis
     REDIS_HOST: str

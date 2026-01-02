@@ -12,7 +12,7 @@ from .models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
-pwd_context = CryptContext(schemes=[settings.CRYPT_CONTEXT], deprecated="auto")
+pwd_context = CryptContext(schemes=[settings.PASSWORD_HASH_SCHEME], deprecated="auto")
 
 
 async def get_current_user(

@@ -111,7 +111,7 @@ def valid_access_token(test_user: User) -> str:
 @pytest.fixture
 def pwd_context():
     """Get the password hashing context."""
-    return CryptContext(schemes=[settings.CRYPT_CONTEXT], deprecated="auto")
+    return CryptContext(schemes=[settings.PASSWORD_HASH_SCHEME], deprecated="auto")
 
 
 class FakeRedis:
