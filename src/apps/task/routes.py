@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -53,11 +53,14 @@ async def task_list(
     else:
         stmt = stmt.order_by(order_column.asc())
 
+    # Count
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total = await db.scalar(count_stmt)
+
     # Pagination
     stmt = stmt.offset(skip).limit(limit)
     result = await db.execute(stmt)
     tasks = result.scalars().all()
-    total = len(tasks)
 
     return TaskListResponse(
         tasks=tasks,
