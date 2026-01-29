@@ -8,13 +8,13 @@ from apps.auth.models import User
 from apps.auth.routes import auth_router, user_router
 from apps.task.routes import task_router
 from database.db import close_db
-from infrastructure.redis.client import init_redis
+from infrastructure.redis.client import cleanup_pool
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_redis()
     yield
+    await cleanup_pool()
     await close_db()
 
 
@@ -26,7 +26,7 @@ app = FastAPI(
 
 api_version_prefix = "/api/v1"
 auth_prefix = "/auth"
-analytics_prefix="/analytics"
+analytics_prefix = "/analytics"
 app.include_router(user_router, prefix=f"{api_version_prefix}", tags=["users"])
 app.include_router(auth_router, prefix=f"{api_version_prefix}{auth_prefix}", tags=["auth"])
 app.include_router(task_router, prefix=f"{api_version_prefix}", tags=["tasks"])
