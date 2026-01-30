@@ -5,7 +5,7 @@ from apps.auth.dependencies import get_current_user
 from database.models import User
 
 
-def superuser_required(
+async def superuser_required(
     current_user: User = Depends(get_current_user),
 ) -> User:
     if not current_user.is_superuser:

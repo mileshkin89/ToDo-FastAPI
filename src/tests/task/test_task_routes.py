@@ -122,3 +122,60 @@ async def test_delete_task_success(client, valid_access_token, test_task):
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_read_task_forbidden_for_other_user(
+    client,
+    another_access_token,
+    test_task,
+):
+    response = await client.get(
+        f"{api_version_prefix}/tasks/{test_task.id}",
+        headers={"Authorization": f"Bearer {another_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_read_task_allowed_for_admin(
+    client,
+    admin_access_token,
+    test_task,
+):
+    response = await client.get(
+        f"{api_version_prefix}/tasks/{test_task.id}",
+        headers={"Authorization": f"Bearer {admin_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == test_task.id
+
+
+@pytest.mark.asyncio
+async def test_delete_task_forbidden_for_admin(
+    client,
+    admin_access_token,
+    test_task,
+):
+    response = await client.delete(
+        f"{api_version_prefix}/tasks/{test_task.id}",
+        headers={"Authorization": f"Bearer {admin_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_delete_task_forbidden_for_other_user(
+    client,
+    another_access_token,
+    test_task,
+):
+    response = await client.delete(
+        f"{api_version_prefix}/tasks/{test_task.id}",
+        headers={"Authorization": f"Bearer {another_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN

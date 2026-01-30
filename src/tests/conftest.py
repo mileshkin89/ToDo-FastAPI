@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import app
+from apps.auth.dependencies import get_current_user
 from apps.auth.jwt import create_access_token
 from database.db import close_db, get_db_contextmanager, reset_db
 from database.models import Task, User
@@ -146,3 +147,58 @@ def override_redis():
     app.dependency_overrides[get_redis] = _get_fake_redis
     yield
     app.dependency_overrides.pop(get_redis, None)
+
+
+@pytest.fixture
+async def admin_user(db_session, pwd_context):
+    user = User(
+        email="admin@example.com",
+        name="Admin",
+        hashed_password=pwd_context.hash("admin"),
+        is_active=True,
+        is_superuser=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def override_admin(admin_user):
+    async def _override():
+        return admin_user
+
+    app.dependency_overrides[get_current_user] = _override
+    yield
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def another_user(db_session: AsyncSession, pwd_context: CryptContext) -> User:
+    user = User(
+        email="another@example.com",
+        name="Another User",
+        hashed_password=pwd_context.hash("anotherpassword"),
+        is_active=True,
+        is_superuser=False,
+        registered_at=datetime.utcnow(),
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user
+
+
+@pytest.fixture
+def another_access_token(another_user: User) -> str:
+    data = {"sub": str(another_user.id)}
+    return create_access_token(data)
+
+
+@pytest.fixture
+def admin_access_token(admin_user: User) -> str:
+    data = {"sub": str(admin_user.id)}
+    return create_access_token(data)
