@@ -8,9 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tqdm import tqdm
 
 from apps.auth.dependencies import pwd_context
-from apps.auth.models import User
-from apps.task.models import Task
 from database.db import get_db_contextmanager, reset_db
+from database.models import Task, User
 from database.populate_data import get_random_task_data
 
 fake = Faker()

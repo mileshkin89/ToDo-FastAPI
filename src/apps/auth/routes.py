@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -18,21 +17,12 @@ from apps.auth.jwt import (
     create_refresh_token,
     verify_refresh_token,
 )
-from apps.auth.models import User
-from apps.auth.schemas import Token, UserCreate, UserListResponse, UserResponse
 from apps.auth.utils import set_refresh_token_cookie
+from apps.schemas import Token, UserCreate, UserResponse
 from database.db import get_db
+from database.models import User
 
-user_router = APIRouter()
 auth_router = APIRouter()
-
-
-@user_router.get("/users", response_model=UserListResponse, status_code=status.HTTP_200_OK)
-async def get_users(db: AsyncSession = Depends(get_db)):
-    stmt = select(User).order_by(User.id)
-    result = await db.execute(stmt)
-    users = result.scalars().all()
-    return UserListResponse(users=users)
 
 
 @auth_router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

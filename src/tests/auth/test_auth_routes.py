@@ -5,19 +5,6 @@ from app import api_version_prefix, auth_prefix
 
 
 @pytest.mark.asyncio
-async def test_get_users(client, test_user):
-    """Ensure the users endpoint returns a list of registered users."""
-    response = await client.get(f"{api_version_prefix}/users")
-
-    assert response.status_code == status.HTTP_200_OK
-
-    data = response.json()
-    assert "users" in data
-    assert len(data["users"]) == 1
-    assert data["users"][0]["email"] == test_user.email
-
-
-@pytest.mark.asyncio
 async def test_register_success(client):
     """Verify that a new user can be successfully registered."""
     payload = {

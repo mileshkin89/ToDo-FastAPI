@@ -2,11 +2,7 @@ from enum import Enum
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.auth.models import User
-
-from .cache import AnalyticsCache
-from .repository import AnalyticsRepository, UserAnalyticsRepository
-from .schemas import (
+from apps.schemas import (
     CountersSchema,
     TaskLast7DaysSchema,
     TaskLast24HoursSchema,
@@ -22,6 +18,10 @@ from .schemas import (
     UserTaskPerDaySchema,
     UserTaskPerWeekSchema,
 )
+from database.models import User
+
+from .cache import AnalyticsCache
+from .repository import AnalyticsRepository, UserAnalyticsRepository
 
 
 class AnalyticsPeriod(str, Enum):

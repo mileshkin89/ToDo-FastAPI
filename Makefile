@@ -68,3 +68,19 @@ seed: ## Populate database with test data
 	@echo "Database seeding completed!"
 	@echo "========================================="
 
+# ============================================
+# Create Superuser Commands
+# ============================================
+
+create_superuser: ## Creating Superuser
+	@echo "========================================="
+	@echo "Creating Superuser Process"
+	@echo "========================================="
+	@echo "Running process..."
+	@docker compose --env-file $(ENV_FILE) run --rm web sh /app/commands/create_superuser.sh
+	@echo "========================================="
+	@echo "Process completed!"
+	@echo "========================================="
+
+
+

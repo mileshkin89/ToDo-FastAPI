@@ -8,12 +8,11 @@ from starlette import status
 from apps.analytics.cache import AnalyticsCacheInvalidator
 from apps.analytics.dependencies import get_cache_invalidator
 from apps.auth.dependencies import get_current_user
-from apps.auth.models import User
+from apps.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
 from database.db import get_db
+from database.models import Task, User
 
-from .dependencies import get_task_by_id
-from .models import Task
-from .schemas import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
+from .dependencies import get_task_to_owner, get_task_to_owner_or_admin
 
 task_router = APIRouter()
 
@@ -97,7 +96,7 @@ async def create_task(
 
 @task_router.get("/tasks/{task_id}", response_model=TaskResponse, status_code=status.HTTP_200_OK)
 async def read_task(
-        task: Task = Depends(get_task_by_id),
+        task: Task = Depends(get_task_to_owner_or_admin),
 ):
     return task
 
@@ -106,7 +105,7 @@ async def read_task(
 async def update_task(
         task_up: TaskUpdate,
         db: AsyncSession = Depends(get_db),
-        task: Task = Depends(get_task_by_id),
+        task: Task = Depends(get_task_to_owner_or_admin),
         cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
     update_data = task_up.model_dump(exclude_unset=True)
@@ -126,7 +125,7 @@ async def update_task(
 @task_router.patch("/tasks/{task_id}/toggle", response_model=TaskResponse, status_code=status.HTTP_200_OK)
 async def toggle_task(
         db: AsyncSession = Depends(get_db),
-        task: Task = Depends(get_task_by_id),
+        task: Task = Depends(get_task_to_owner_or_admin),
         cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
     task.completed = not task.completed
@@ -144,7 +143,7 @@ async def toggle_task(
 @task_router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
         db: AsyncSession = Depends(get_db),
-        task: Task = Depends(get_task_by_id),
+        task: Task = Depends(get_task_to_owner),
         cache_invalidator: AnalyticsCacheInvalidator = Depends(get_cache_invalidator),
 ):
     await db.delete(task)

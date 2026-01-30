@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apps.analytics.cache import AnalyticsCache, AnalyticsCacheInvalidator
 from apps.analytics.service import AnalyticsService, UserAnalyticsService
 from apps.auth.dependencies import get_current_user
-from apps.auth.models import User
 from database.db import get_db
+from database.models import User
 from infrastructure.redis.client import get_redis
 
 

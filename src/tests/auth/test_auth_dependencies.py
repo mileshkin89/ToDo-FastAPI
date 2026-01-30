@@ -11,7 +11,7 @@ from apps.auth.dependencies import (
     get_user_by_email,
     get_user_by_id,
 )
-from apps.auth.models import User
+from database.models import User
 
 
 @pytest.mark.asyncio

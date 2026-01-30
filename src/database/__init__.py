@@ -15,7 +15,7 @@ if async_db_url.startswith("sqlite"):
 else:
     engine: AsyncEngine = create_async_engine(
         async_db_url,
-        echo=True,
+        echo=False,
         future=True,
         pool_pre_ping=True,
         pool_recycle=300,

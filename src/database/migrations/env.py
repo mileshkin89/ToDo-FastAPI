@@ -1,8 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from apps.auth import models  # noqa F401
-from apps.task import models  # noqa F401
+from database import models  # noqa F401
 from database.db import Base
 from database import sync_postgresql_engine
 

@@ -2,8 +2,6 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.auth.models import User
-from apps.task.models import Task
 from database.db import (
     close_db,
     engine,
@@ -12,6 +10,7 @@ from database.db import (
     init_db,
     reset_db,
 )
+from database.models import Task, User
 
 
 @pytest.mark.asyncio

@@ -10,9 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import app
 from apps.auth.jwt import create_access_token
-from apps.auth.models import User
-from apps.task.models import Task
 from database.db import close_db, get_db_contextmanager, reset_db
+from database.models import Task, User
 from infrastructure.redis.client import get_redis
 from settings import settings
 
