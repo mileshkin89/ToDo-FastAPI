@@ -15,6 +15,7 @@ async def test_get_task_by_id_success(
     db_session: AsyncSession,
     test_task: Task,
 ):
+    """Test that get_task_by_id returns a task when found."""
     task = await get_task_by_id(
         task_id=test_task.id,
         db=db_session,
@@ -29,6 +30,7 @@ async def test_get_task_by_id_success(
 async def test_get_task_by_id_not_found(
     db_session: AsyncSession,
 ):
+    """Ensure get_task_by_id raises 404 when task is not found."""
     with pytest.raises(HTTPException) as exc:
         await get_task_by_id(
             task_id=999,
@@ -45,6 +47,7 @@ async def test_get_task_to_owner_success(
     test_user: User,
     test_task: Task,
 ):
+    """Test that get_task_to_owner returns a task for its owner."""
     task = await get_task_to_owner(
         task_id=test_task.id,
         db=db_session,
@@ -60,6 +63,7 @@ async def test_get_task_to_owner_not_found(
     db_session: AsyncSession,
     test_user: User,
 ):
+    """Ensure get_task_to_owner raises 404 when task is not found."""
     with pytest.raises(HTTPException) as exc:
         await get_task_to_owner(
             task_id=999,
@@ -76,6 +80,7 @@ async def test_get_task_to_owner_access_denied(
     test_task: Task,
     pwd_context,
 ):
+    """Ensure get_task_to_owner denies access for non-owners."""
     other_user = User(
         email="other@example.com",
         name="Other User",
@@ -104,6 +109,7 @@ async def test_owner_or_admin_owner_success(
     test_user: User,
     test_task: Task,
 ):
+    """Test that get_task_to_owner_or_admin allows access for task owner."""
     task = await get_task_to_owner_or_admin(
         task_id=test_task.id,
         db=db_session,
@@ -119,6 +125,7 @@ async def test_owner_or_admin_admin_success(
     test_task: Task,
     pwd_context,
 ):
+    """Test that get_task_to_owner_or_admin allows access for admin users."""
     admin = User(
         email="admin@example.com",
         name="Admin",
@@ -146,6 +153,7 @@ async def test_owner_or_admin_access_denied(
     test_task: Task,
     pwd_context,
 ):
+    """Ensure get_task_to_owner_or_admin denies access for non-owners and non-admins."""
     user = User(
         email="user@example.com",
         name="User",

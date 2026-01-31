@@ -12,6 +12,7 @@ async def get_task_by_id(
         task_id: int = Path(...),
         db: AsyncSession = Depends(get_db),
 ) -> Task:
+    """Get a task by ID or raise 404 if not found."""
     stmt = select(Task).where(Task.id == task_id)
     result = await db.execute(stmt)
     task = result.scalars().one_or_none()
@@ -27,6 +28,7 @@ async def get_task_to_owner(
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ) -> Task:
+    """Get a task by ID, ensuring the current user is the owner."""
     stmt = select(Task).where(Task.id == task_id)
     result = await db.execute(stmt)
     task = result.scalars().one_or_none()
@@ -45,6 +47,7 @@ async def get_task_to_owner_or_admin(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Task:
+    """Get a task by ID, ensuring the current user is the owner or an admin."""
     stmt = select(Task).where(Task.id == task_id)
     result = await db.execute(stmt)
     task = result.scalars().one_or_none()

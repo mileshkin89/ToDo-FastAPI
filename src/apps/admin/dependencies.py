@@ -8,6 +8,7 @@ from database.models import User
 async def superuser_required(
     current_user: User = Depends(get_current_user),
 ) -> User:
+    """Require superuser privileges for access."""
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

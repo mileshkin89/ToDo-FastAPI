@@ -14,6 +14,7 @@ from settings import settings
 
 
 def test_create_access_token_contains_payload():
+    """Test that create_access_token includes the payload in the token."""
     data = {"sub": "1"}
 
     token = create_access_token(data)
@@ -30,6 +31,7 @@ def test_create_access_token_contains_payload():
 
 
 def test_create_refresh_token_contains_payload():
+    """Test that create_refresh_token includes the payload in the token."""
     data = {"sub": "1"}
 
     token = create_refresh_token(data)
@@ -46,6 +48,7 @@ def test_create_refresh_token_contains_payload():
 
 
 def test_verify_access_token_valid():
+    """Test that verify_access_token successfully validates a valid token."""
     data = {"sub": "1"}
     token = create_access_token(data)
 
@@ -55,6 +58,7 @@ def test_verify_access_token_valid():
 
 
 def test_verify_access_token_expired():
+    """Ensure verify_access_token rejects expired tokens."""
     expired_payload = {
         "sub": "1",
         "exp": datetime.utcnow() - timedelta(seconds=1),
@@ -74,6 +78,7 @@ def test_verify_access_token_expired():
 
 
 def test_verify_access_token_invalid():
+    """Ensure verify_access_token rejects invalid token strings."""
     with pytest.raises(HTTPException) as exc:
         verify_access_token("invalid.token.string")
 
@@ -82,6 +87,7 @@ def test_verify_access_token_invalid():
 
 
 def test_verify_refresh_token_valid():
+    """Test that verify_refresh_token successfully validates a valid token."""
     data = {"sub": "1"}
     token = create_refresh_token(data)
 
@@ -91,6 +97,7 @@ def test_verify_refresh_token_valid():
 
 
 def test_verify_refresh_token_expired():
+    """Ensure verify_refresh_token rejects expired tokens."""
     expired_payload = {
         "sub": "1",
         "exp": datetime.utcnow() - timedelta(seconds=1),
@@ -110,6 +117,7 @@ def test_verify_refresh_token_expired():
 
 
 def test_verify_refresh_token_wrong_secret():
+    """Ensure verify_refresh_token rejects tokens signed with wrong secret."""
     data = {"sub": "1"}
 
     token = jwt.encode(

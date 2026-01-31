@@ -19,6 +19,7 @@ async def get_current_user(
         token: str = Depends(oauth2_scheme),
         db: AsyncSession = Depends(get_db)
 ):
+    """Get the current authenticated user from JWT token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -45,6 +46,7 @@ async def get_user_by_email(
         email: str,
         db: AsyncSession = Depends(get_db)
 ) -> User | None:
+    """Get a user by email address."""
     stmt = select(User).where(User.email == email)
     result = await db.execute(stmt)
     return result.scalars().one_or_none()
@@ -54,6 +56,7 @@ async def get_user_by_id(
         user_id: int,
         db: AsyncSession = Depends(get_db)
 ) -> User | None:
+    """Get a user by ID."""
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     return result.scalars().one_or_none()
@@ -64,6 +67,7 @@ async def authenticate_user(
         password: str,
         db: AsyncSession = Depends(get_db)
 ):
+    """Authenticate a user by email and password."""
     user_db = await get_user_by_email(email, db)
     if not user_db:
         raise HTTPException(

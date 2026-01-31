@@ -25,7 +25,14 @@ from database.models import User
 auth_router = APIRouter()
 
 
-@auth_router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@auth_router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register new user",
+    description="Create a new user account. The password must match the repeat_password field. Email must be unique.",
+    response_description="Created user information"
+)
 async def register(
         user: UserCreate,
         db: AsyncSession = Depends(get_db)
@@ -49,7 +56,13 @@ async def register(
     return user_db
 
 
-@auth_router.post("/token", response_model=Token)
+@auth_router.post(
+    "/token",
+    response_model=Token,
+    summary="User login",
+    description="Authenticate a user and receive an access token. The refresh token is automatically set as an HTTP-only cookie. Updates the user's last_login timestamp.",
+    response_description="Access token and token type"
+)
 async def login(
         response: Response,
         form_data: OAuth2PasswordRequestForm = Depends(),
@@ -72,7 +85,13 @@ async def login(
     }
 
 
-@auth_router.post("/token/refresh", response_model=Token)
+@auth_router.post(
+    "/token/refresh",
+    response_model=Token,
+    summary="Refresh access token",
+    description="Generate a new access token using a valid refresh token. The refresh token must be provided as an HTTP-only cookie. A new refresh token is issued and set as a cookie.",
+    response_description="New access token and token type"
+)
 async def refresh_token(
         response: Response,
         refresh_token: str = Cookie(None, alias="refresh_token"),
@@ -110,7 +129,12 @@ async def refresh_token(
     }
 
 
-@auth_router.post("/logout")
+@auth_router.post(
+    "/logout",
+    summary="User logout",
+    description="Log out the current user by invalidating the refresh token and clearing the refresh token cookie. Requires authentication.",
+    response_description="Logout confirmation message"
+)
 async def logout(
         response: Response,
         current_user: User = Depends(get_current_user),

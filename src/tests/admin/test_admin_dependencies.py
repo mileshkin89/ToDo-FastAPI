@@ -7,6 +7,7 @@ from database.models import User
 
 @pytest.mark.asyncio
 async def test_superuser_required_success(pwd_context):
+    """Test that superuser_required allows access for superusers."""
     admin = User(
         email="admin@example.com",
         name="Admin",
@@ -23,6 +24,7 @@ async def test_superuser_required_success(pwd_context):
 
 @pytest.mark.asyncio
 async def test_superuser_required_forbidden(pwd_context):
+    """Ensure superuser_required denies access for non-superusers."""
     user = User(
         email="user@example.com",
         name="User",

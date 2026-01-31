@@ -25,12 +25,14 @@ from .repository import AnalyticsRepository, UserAnalyticsRepository
 
 
 class AnalyticsPeriod(str, Enum):
+    """Analytics time period options."""
     LAST_24_HOURS = "24h"
     LAST_7_DAYS = "7d"
     LAST_4_WEEKS = "4w"
 
 
 class AnalyticsService:
+    """Service for global analytics with caching."""
     GLOBAL_COUNTERS_KEY = "analytics:global"
     TASKS_24H_KEY = "analytics:global_aggregated:24h"
     TASKS_7D_KEY = "analytics:global_aggregated:7d"
@@ -46,10 +48,12 @@ class AnalyticsService:
     }
 
     def __init__(self, db: AsyncSession, cache: AnalyticsCache):
+        """Initialize analytics service with database and cache."""
         self.db = db
         self.cache = cache
 
     async def get_global_counters(self) -> CountersSchema:
+        """Get global task and user counters."""
         cached = await self.cache.get(self.GLOBAL_COUNTERS_KEY)
         if cached is not None:
             return CountersSchema(**cached)
@@ -60,6 +64,7 @@ class AnalyticsService:
         return CountersSchema(**data)
 
     async def get_by_period(self, period: AnalyticsPeriod):
+        """Get analytics data for a specific time period."""
         method_name = self._PERIOD_HANDLERS.get(period)
 
         if not method_name:
@@ -69,6 +74,7 @@ class AnalyticsService:
         return await handler()
 
     async def get_tasks_last_24_hours(self) -> TaskLastDaySchema:
+        """Get task analytics for the last 24 hours."""
         cached = await self.cache.get(self.TASKS_24H_KEY)
         if cached is not None:
             return TaskLastDaySchema(
@@ -83,6 +89,7 @@ class AnalyticsService:
         )
 
     async def get_tasks_last_7_days(self) -> TaskLast7DaysSchema:
+        """Get task analytics for the last 7 days."""
         cached = await self.cache.get(self.TASKS_7D_KEY)
         if cached is not None:
             return TaskLast7DaysSchema(
@@ -97,6 +104,7 @@ class AnalyticsService:
         )
 
     async def get_tasks_last_4_weeks(self) -> TaskLastMonthSchema:
+        """Get task analytics for the last 4 weeks."""
         cached = await self.cache.get(self.TASKS_4W_KEY)
         if cached is not None:
             return TaskLastMonthSchema(
@@ -112,6 +120,7 @@ class AnalyticsService:
 
 
 class UserAnalyticsService:
+    """Service for user-specific analytics with caching."""
     USER_GLOBAL_KEY = "analytics:user:{user_id}"
     TASKS_24H_KEY = "analytics:user:{user_id}:24h"
     TASKS_7D_KEY = "analytics:user:{user_id}:7d"
@@ -127,11 +136,13 @@ class UserAnalyticsService:
     }
 
     def __init__(self, db: AsyncSession, cache: AnalyticsCache, user: User):
+        """Initialize user analytics service with database, cache, and user."""
         self.db = db
         self.cache = cache
         self.user = user
 
     async def get_user_analytics(self) -> UserCountersSchema:
+        """Get analytics counters for the current user."""
         key = self.USER_GLOBAL_KEY.format(user_id=self.user.id)
 
         cached = await self.cache.get(key)
@@ -144,6 +155,7 @@ class UserAnalyticsService:
         return UserCountersSchema(**data)
 
     async def get_user_analytics_by_period(self, period: AnalyticsPeriod):
+        """Get user analytics data for a specific time period."""
         method_name = self._PERIOD_HANDLERS.get(period)
 
         if not method_name:
@@ -153,6 +165,7 @@ class UserAnalyticsService:
         return await handler()
 
     async def get_user_tasks_last_24_hours(self) -> UserTaskLastDaySchema:
+        """Get user task analytics for the last 24 hours."""
         key = self.TASKS_24H_KEY.format(user_id=self.user.id)
 
         cached = await self.cache.get(key)
@@ -169,6 +182,7 @@ class UserAnalyticsService:
         )
 
     async def get_user_tasks_last_7_days(self) -> UserTaskLast7DaysSchema:
+        """Get user task analytics for the last 7 days."""
         key = self.TASKS_7D_KEY.format(user_id=self.user.id)
 
         cached = await self.cache.get(key)
@@ -185,6 +199,7 @@ class UserAnalyticsService:
         )
 
     async def get_user_tasks_last_4_weeks(self) -> UserTaskLastMonthSchema:
+        """Get user task analytics for the last 4 weeks."""
         key = self.TASKS_4W_KEY.format(user_id=self.user.id)
 
         cached = await self.cache.get(key)

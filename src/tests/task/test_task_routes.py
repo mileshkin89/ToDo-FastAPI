@@ -130,6 +130,7 @@ async def test_read_task_forbidden_for_other_user(
     another_access_token,
     test_task,
 ):
+    """Ensure users cannot read tasks belonging to other users."""
     response = await client.get(
         f"{api_version_prefix}/tasks/{test_task.id}",
         headers={"Authorization": f"Bearer {another_access_token}"},
@@ -144,6 +145,7 @@ async def test_read_task_allowed_for_admin(
     admin_access_token,
     test_task,
 ):
+    """Test that admin can read tasks belonging to any user."""
     response = await client.get(
         f"{api_version_prefix}/tasks/{test_task.id}",
         headers={"Authorization": f"Bearer {admin_access_token}"},
@@ -159,6 +161,7 @@ async def test_delete_task_forbidden_for_admin(
     admin_access_token,
     test_task,
 ):
+    """Ensure admin cannot delete tasks belonging to other users."""
     response = await client.delete(
         f"{api_version_prefix}/tasks/{test_task.id}",
         headers={"Authorization": f"Bearer {admin_access_token}"},
@@ -173,6 +176,7 @@ async def test_delete_task_forbidden_for_other_user(
     another_access_token,
     test_task,
 ):
+    """Ensure users cannot delete tasks belonging to other users."""
     response = await client.delete(
         f"{api_version_prefix}/tasks/{test_task.id}",
         headers={"Authorization": f"Bearer {another_access_token}"},

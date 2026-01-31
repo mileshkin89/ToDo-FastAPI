@@ -17,7 +17,14 @@ from .dependencies import get_task_to_owner, get_task_to_owner_or_admin
 task_router = APIRouter()
 
 
-@task_router.get("/tasks", response_model=TaskListResponse, status_code=status.HTTP_200_OK)
+@task_router.get(
+    "/tasks",
+    response_model=TaskListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get user's tasks",
+    description="Retrieve a paginated list of tasks belonging to the authenticated user. Supports filtering by completion status, searching by title or description, and sorting.",
+    response_description="List of tasks with pagination metadata"
+)
 async def task_list(
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user),
@@ -72,7 +79,14 @@ async def task_list(
     )
 
 
-@task_router.post("/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+@task_router.post(
+    "/tasks",
+    response_model=TaskResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create new task",
+    description="Create a new task for the authenticated user. The task is automatically associated with the current user. Invalidates user analytics cache.",
+    response_description="Created task information"
+)
 async def create_task(
         task: TaskCreate,
         db: AsyncSession = Depends(get_db),
@@ -94,14 +108,28 @@ async def create_task(
     return task_db
 
 
-@task_router.get("/tasks/{task_id}", response_model=TaskResponse, status_code=status.HTTP_200_OK)
+@task_router.get(
+    "/tasks/{task_id}",
+    response_model=TaskResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get task by ID",
+    description="Retrieve detailed information about a specific task. Users can only access their own tasks, while admins can access any task.",
+    response_description="Task details"
+)
 async def read_task(
         task: Task = Depends(get_task_to_owner_or_admin),
 ):
     return task
 
 
-@task_router.put("/tasks/{task_id}", response_model=TaskResponse, status_code=status.HTTP_200_OK)
+@task_router.put(
+    "/tasks/{task_id}",
+    response_model=TaskResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update task",
+    description="Update an existing task. Only the task owner or an admin can update a task. Only provided fields will be updated. Invalidates user analytics cache.",
+    response_description="Updated task information"
+)
 async def update_task(
         task_up: TaskUpdate,
         db: AsyncSession = Depends(get_db),
@@ -122,7 +150,14 @@ async def update_task(
     return task
 
 
-@task_router.patch("/tasks/{task_id}/toggle", response_model=TaskResponse, status_code=status.HTTP_200_OK)
+@task_router.patch(
+    "/tasks/{task_id}/toggle",
+    response_model=TaskResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Toggle task completion status",
+    description="Toggle the completion status of a task. If marking as completed, sets completed_at timestamp. Only the task owner or an admin can toggle a task. Invalidates user analytics cache.",
+    response_description="Updated task with new completion status"
+)
 async def toggle_task(
         db: AsyncSession = Depends(get_db),
         task: Task = Depends(get_task_to_owner_or_admin),
@@ -140,7 +175,13 @@ async def toggle_task(
     return task
 
 
-@task_router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+@task_router.delete(
+    "/tasks/{task_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete task",
+    description="Delete a task. Only the task owner can delete their tasks. Admins cannot delete tasks belonging to other users. Invalidates user analytics cache.",
+    response_description="No content on successful deletion"
+)
 async def delete_task(
         db: AsyncSession = Depends(get_db),
         task: Task = Depends(get_task_to_owner),

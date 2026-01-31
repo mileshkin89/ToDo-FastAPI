@@ -151,6 +151,7 @@ def override_redis():
 
 @pytest.fixture
 async def admin_user(db_session, pwd_context):
+    """Create and return an admin user for testing."""
     user = User(
         email="admin@example.com",
         name="Admin",
@@ -166,6 +167,7 @@ async def admin_user(db_session, pwd_context):
 
 @pytest.fixture
 def override_admin(admin_user):
+    """Override get_current_user dependency to return admin user."""
     async def _override():
         return admin_user
 
@@ -176,6 +178,7 @@ def override_admin(admin_user):
 
 @pytest.fixture
 async def another_user(db_session: AsyncSession, pwd_context: CryptContext) -> User:
+    """Create and return another test user for testing access control."""
     user = User(
         email="another@example.com",
         name="Another User",
@@ -194,11 +197,13 @@ async def another_user(db_session: AsyncSession, pwd_context: CryptContext) -> U
 
 @pytest.fixture
 def another_access_token(another_user: User) -> str:
+    """Generate a valid access token for another_user."""
     data = {"sub": str(another_user.id)}
     return create_access_token(data)
 
 
 @pytest.fixture
 def admin_access_token(admin_user: User) -> str:
+    """Generate a valid access token for admin_user."""
     data = {"sub": str(admin_user.id)}
     return create_access_token(data)

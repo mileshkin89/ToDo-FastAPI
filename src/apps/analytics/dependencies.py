@@ -14,6 +14,7 @@ async def get_analytics_service(
         db: AsyncSession = Depends(get_db),
         redis: Redis = Depends(get_redis),
 ) -> AnalyticsService:
+    """Get analytics service instance with database and cache dependencies."""
     cache = AnalyticsCache(redis)
 
     return AnalyticsService(
@@ -27,6 +28,7 @@ async def get_user_analytics_service(
         db: AsyncSession = Depends(get_db),
         redis=Depends(get_redis),
 ) -> UserAnalyticsService:
+    """Get user analytics service instance with dependencies."""
     cache = AnalyticsCache(redis)
 
     return UserAnalyticsService(
@@ -40,4 +42,5 @@ async def get_cache_invalidator(
         redis=Depends(get_redis),
 
 ) -> AnalyticsCacheInvalidator:
+    """Get analytics cache invalidator instance."""
     return AnalyticsCacheInvalidator(redis)

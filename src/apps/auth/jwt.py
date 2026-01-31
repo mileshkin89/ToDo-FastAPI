@@ -8,6 +8,7 @@ from settings import settings
 
 
 def create_access_token(data: dict):
+    """Create a JWT access token with expiration."""
     to_encode = data.copy()
     expire = dt.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
@@ -16,6 +17,7 @@ def create_access_token(data: dict):
 
 
 def create_refresh_token(data: dict):
+    """Create a JWT refresh token with expiration."""
     to_encode = data.copy()
     expire = dt.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire})
@@ -24,6 +26,7 @@ def create_refresh_token(data: dict):
 
 
 def verify_access_token(token: str):
+    """Verify and decode a JWT access token."""
     try:
         payload = jwt.decode(
             token,
@@ -41,6 +44,7 @@ def verify_access_token(token: str):
 
 
 def verify_refresh_token(token: str):
+    """Verify and decode a JWT refresh token."""
     try:
         payload = jwt.decode(
             token,

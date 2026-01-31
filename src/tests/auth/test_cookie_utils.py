@@ -4,6 +4,7 @@ from apps.auth.utils import set_refresh_token_cookie
 
 
 def test_set_refresh_token_cookie_sets_cookie():
+    """Test that set_refresh_token_cookie sets the cookie in the response."""
     response = Response()
     refresh_token = "test-refresh-token"
 
@@ -14,6 +15,7 @@ def test_set_refresh_token_cookie_sets_cookie():
 
 
 def test_set_refresh_token_cookie_attributes():
+    """Test that set_refresh_token_cookie sets correct cookie attributes."""
     response = Response()
     refresh_token = "test-refresh-token"
 

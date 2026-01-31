@@ -9,6 +9,7 @@ _redis_pool: ConnectionPool | None = None
 
 
 async def get_pool() -> ConnectionPool:
+    """Get or create a Redis connection pool."""
     global _redis_pool
 
     if _redis_pool is None:
@@ -21,6 +22,7 @@ async def get_pool() -> ConnectionPool:
 
 
 async def cleanup_pool() -> None:
+    """Disconnect and cleanup the Redis connection pool."""
     global _redis_pool
 
     if _redis_pool:
@@ -29,6 +31,7 @@ async def cleanup_pool() -> None:
 
 
 async def get_redis() -> AsyncIterator[Redis]:
+    """Get a Redis client instance from the connection pool."""
     await get_pool()
 
     if _redis_pool is None:

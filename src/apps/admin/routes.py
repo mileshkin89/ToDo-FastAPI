@@ -16,7 +16,10 @@ admin_router = APIRouter()
     "/users",
     dependencies=[Depends(superuser_required)],
     response_model=UserListResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary="Get list of users",
+    description="Retrieve a paginated list of all users. Requires superuser privileges. Supports filtering by active status, searching by name or email, and sorting.",
+    response_description="List of users with pagination metadata"
 )
 async def get_users(
         db: AsyncSession = Depends(get_db),
@@ -84,7 +87,10 @@ async def get_users(
     "/users/{user_id}",
     dependencies=[Depends(superuser_required)],
     response_model=UserResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary="Get user by ID",
+    description="Retrieve detailed information about a specific user by their ID. Requires superuser privileges.",
+    response_description="User details"
 )
 async def get_user(
         user: User | None = Depends(get_user_by_id),
@@ -99,7 +105,10 @@ async def get_user(
     "/users/{user_id}/deactivate",
     dependencies=[Depends(superuser_required)],
     response_model=UserResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary="Deactivate user",
+    description="Deactivate a user account by setting is_active to False. Requires superuser privileges.",
+    response_description="Updated user information"
 )
 async def deactivate_user(
         user: User | None = Depends(get_user_by_id),
@@ -118,7 +127,10 @@ async def deactivate_user(
     "/users/{user_id}/activate",
     dependencies=[Depends(superuser_required)],
     response_model=UserResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary="Activate user",
+    description="Activate a user account by setting is_active to True. Requires superuser privileges.",
+    response_description="Updated user information"
 )
 async def activate_user(
         user: User | None = Depends(get_user_by_id),
@@ -137,7 +149,10 @@ async def activate_user(
     "/users/{user_id}/tasks",
     dependencies=[Depends(superuser_required)],
     response_model=TaskByUserResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary="Get tasks by user",
+    description="Retrieve all tasks belonging to a specific user. Requires superuser privileges. Supports filtering by completion status, searching, and sorting.",
+    response_description="User information with their tasks and pagination metadata"
 )
 async def get_tasks_by_user(
         user_id: int = Path(...),

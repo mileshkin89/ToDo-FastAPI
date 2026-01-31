@@ -20,6 +20,7 @@ async def _seed_users(
         default_password: str = "pass123",
         db: AsyncSession | None = None
 ) -> None:
+    """Seed the database with fake user data."""
     if db is None:
         raise ValueError("AsyncSession is required")
 
@@ -52,6 +53,7 @@ async def _seed_tasks(
         completion_probability: float = 0.7,
         db: AsyncSession | None = None
 ) -> None:
+    """Seed the database with fake task data for existing users."""
     if db is None:
         raise ValueError("AsyncSession is required")
 
@@ -106,6 +108,7 @@ async def _seed_tasks(
 
 
 async def main():
+    """Main function to reset and seed the database with test data."""
     await reset_db()
 
     print("Start seeding...")

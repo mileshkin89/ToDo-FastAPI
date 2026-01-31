@@ -10,6 +10,7 @@ from database.models import User
 
 
 async def main():
+    """Create a superuser interactively via command line."""
     async_session = async_sessionmaker(
         engine,
         expire_on_commit=False,

@@ -7,6 +7,7 @@ from apps.auth.dependencies import get_current_user
 
 @pytest.mark.asyncio
 async def test_admin_routes_forbidden(client, test_user):
+    """Ensure non-admin users are forbidden from accessing admin routes."""
     async def override_user():
         return test_user
 
@@ -24,6 +25,7 @@ async def test_admin_routes_forbidden(client, test_user):
 
 @pytest.mark.asyncio
 async def test_get_users_success(client, override_admin):
+    """Test that admin can retrieve a list of users."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users")
 
     assert response.status_code == status.HTTP_200_OK
@@ -36,6 +38,7 @@ async def test_get_users_success(client, override_admin):
 
 @pytest.mark.asyncio
 async def test_get_users_filter_active(client, override_admin):
+    """Ensure users can be filtered by active status."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users?active=true")
 
     assert response.status_code == 200
@@ -45,6 +48,7 @@ async def test_get_users_filter_active(client, override_admin):
 
 @pytest.mark.asyncio
 async def test_get_users_invalid_sort(client, override_admin):
+    """Ensure invalid sort parameters return an error."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users?sort_by=invalid")
 
     assert response.status_code == 400
@@ -59,6 +63,7 @@ async def test_get_user_success(
         override_admin,
         test_user,
 ):
+    """Test that admin can retrieve a specific user by ID."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users/{test_user.id}")
 
     assert response.status_code == 200
@@ -70,6 +75,7 @@ async def test_get_user_success(
 
 @pytest.mark.asyncio
 async def test_get_user_not_found(client, override_admin):
+    """Ensure retrieving a non-existent user returns 404."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users/999999")
 
     assert response.status_code == 404
@@ -84,6 +90,7 @@ async def test_deactivate_user(
         override_admin,
         test_user,
 ):
+    """Test that admin can deactivate a user."""
     response = await client.patch(f"{api_version_prefix}{admin_prefix}/users/{test_user.id}/deactivate")
 
     assert response.status_code == 200
@@ -99,6 +106,7 @@ async def test_activate_user(
         test_user,
         db_session,
 ):
+    """Test that admin can activate a deactivated user."""
     test_user.is_active = False
     await db_session.commit()
 
@@ -117,6 +125,7 @@ async def test_get_tasks_by_user(
         test_user,
         test_task,
 ):
+    """Test that admin can retrieve tasks for a specific user."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users/{test_user.id}/tasks")
 
     assert response.status_code == 200
@@ -134,6 +143,7 @@ async def test_get_tasks_by_user_completed_filter(
         test_user,
         test_task,
 ):
+    """Ensure tasks can be filtered by completion status when retrieved by user."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users/{test_user.id}/tasks?completed=false")
 
     assert response.status_code == 200
@@ -146,6 +156,7 @@ async def test_get_tasks_by_user_user_not_found(
         client,
         override_admin,
 ):
+    """Ensure retrieving tasks for a non-existent user returns 404."""
     response = await client.get(f"{api_version_prefix}{admin_prefix}/users/99999/tasks")
 
     assert response.status_code == 404

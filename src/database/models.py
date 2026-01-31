@@ -7,6 +7,7 @@ from database.db import Base
 
 
 class User(Base):
+    """User model representing application users."""
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -31,6 +32,7 @@ class User(Base):
 
 
 class Task(Base):
+    """Task model representing user tasks."""
     __tablename__ = "tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

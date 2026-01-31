@@ -19,6 +19,7 @@ async def test_get_user_by_email_found(
         db_session: AsyncSession,
         test_user: User,
 ):
+    """Test that get_user_by_email returns a user when found."""
     user = await get_user_by_email(test_user.email, db_session)
 
     assert user is not None
@@ -30,6 +31,7 @@ async def test_get_user_by_email_found(
 async def test_get_user_by_email_not_found(
         db_session: AsyncSession,
 ):
+    """Test that get_user_by_email returns None when user is not found."""
     user = await get_user_by_email("missing@example.com", db_session)
 
     assert user is None
@@ -40,6 +42,7 @@ async def test_get_user_by_id_found(
         db_session: AsyncSession,
         test_user: User,
 ):
+    """Test that get_user_by_id returns a user when found."""
     user = await get_user_by_id(test_user.id, db_session)
 
     assert user is not None
@@ -50,6 +53,7 @@ async def test_get_user_by_id_found(
 async def test_get_user_by_id_not_found(
         db_session: AsyncSession,
 ):
+    """Test that get_user_by_id returns None when user is not found."""
     user = await get_user_by_id(999999, db_session)
 
     assert user is None
@@ -60,6 +64,7 @@ async def test_authenticate_user_success(
         db_session: AsyncSession,
         test_user: User,
 ):
+    """Test that authenticate_user succeeds with correct credentials."""
     user = await authenticate_user(
         email=test_user.email,
         password="testpassword123",
@@ -75,6 +80,7 @@ async def test_authenticate_user_wrong_password(
         db_session: AsyncSession,
         test_user: User,
 ):
+    """Ensure authenticate_user raises an error with incorrect password."""
     with pytest.raises(HTTPException) as exc:
         await authenticate_user(
             email=test_user.email,
@@ -90,6 +96,7 @@ async def test_authenticate_user_wrong_password(
 async def test_authenticate_user_user_not_found(
         db_session: AsyncSession,
 ):
+    """Ensure authenticate_user raises an error for non-existent users."""
     with pytest.raises(HTTPException) as exc:
         await authenticate_user(
             email="unknown@example.com",
@@ -113,6 +120,7 @@ async def _test_current_user_endpoint(
 
 @pytest.mark.asyncio
 async def test_current_user_endpoint_success(client, valid_access_token, test_user):
+    """Test that get_current_user returns the correct user from a valid token."""
     response = await client.get(
         "/test-current-user",
         headers={
@@ -133,6 +141,7 @@ async def test_get_current_user_success(
         valid_access_token: str,
         test_user: User,
 ):
+    """Test that get_current_user returns the correct user from a valid token."""
     user = await get_current_user(
         token=valid_access_token,
         db=db_session,
@@ -150,6 +159,7 @@ async def test_get_current_user_success(
 )
 @pytest.mark.asyncio
 async def test_get_current_user_invalid_token(client, token, expected_detail):
+    """Ensure get_current_user rejects invalid tokens."""
     response = await client.get(
         "/test-current-user",
         headers={"Authorization": f"Bearer {token}"}
@@ -163,6 +173,7 @@ async def test_get_current_user_invalid_token(client, token, expected_detail):
 async def test_get_current_user_no_token(
         client: AsyncClient,
 ):
+    """Ensure get_current_user rejects requests without a token."""
     response = await client.get("/test-current-user")
 
     assert response.status_code == 401

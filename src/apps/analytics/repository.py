@@ -3,9 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AnalyticsRepository:
+    """Repository for global analytics queries."""
 
     @staticmethod
     async def get_global_counters(db: AsyncSession) -> dict:
+        """Get global task and user counters from database."""
         query = text("""
             SELECT
                 COUNT(*) AS total_tasks,
@@ -30,6 +32,7 @@ class AnalyticsRepository:
 
     @staticmethod
     async def get_tasks_last_24_hours(db: AsyncSession) -> list[dict]:
+        """Get task statistics aggregated by hour for the last 24 hours."""
         query = text("""
             WITH hours AS (
                 SELECT
@@ -78,6 +81,7 @@ class AnalyticsRepository:
 
     @staticmethod
     async def get_tasks_last_7_days(db: AsyncSession) -> list[dict]:
+        """Get task statistics aggregated by day for the last 7 days."""
         query = text("""
             WITH days AS (
                 SELECT
@@ -124,6 +128,7 @@ class AnalyticsRepository:
 
     @staticmethod
     async def get_tasks_last_4_weeks(db: AsyncSession) -> list[dict]:
+        """Get task statistics aggregated by week for the last 4 weeks."""
         query = text("""
             WITH weeks AS (
                 SELECT
@@ -170,12 +175,14 @@ class AnalyticsRepository:
 
 
 class UserAnalyticsRepository:
+    """Repository for user-specific analytics queries."""
 
     @staticmethod
     async def get_user_analytics(
         db: AsyncSession,
         user_id: int,
     ) -> dict:
+        """Get analytics counters for a specific user."""
         query = text("""
             SELECT
                 CAST(:user_id AS INTEGER) AS user_id,
@@ -211,6 +218,7 @@ class UserAnalyticsRepository:
             db: AsyncSession,
             user_id: int,
     ) -> list[dict]:
+        """Get user task statistics aggregated by hour for the last 24 hours."""
         query = text("""
             WITH hours AS (
                 SELECT generate_series(
@@ -287,6 +295,7 @@ class UserAnalyticsRepository:
         db: AsyncSession,
         user_id: int,
     ) -> list[dict]:
+        """Get user task statistics aggregated by day for the last 7 days."""
         query = text("""
             WITH days AS (
                 SELECT generate_series(
@@ -361,6 +370,7 @@ class UserAnalyticsRepository:
             db: AsyncSession,
             user_id: int,
     ) -> list[dict]:
+        """Get user task statistics aggregated by week for the last 4 weeks."""
         query = text("""
             WITH weeks AS (
                 SELECT generate_series(
