@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime
 from typing import Generator
+from unittest.mock import Mock, patch
 
 import pytest
 import pytest_asyncio
@@ -168,6 +169,7 @@ async def admin_user(db_session, pwd_context):
 @pytest.fixture
 def override_admin(admin_user):
     """Override get_current_user dependency to return admin user."""
+
     async def _override():
         return admin_user
 
@@ -207,3 +209,19 @@ def admin_access_token(admin_user: User) -> str:
     """Generate a valid access token for admin_user."""
     data = {"sub": str(admin_user.id)}
     return create_access_token(data)
+
+
+@pytest.fixture(autouse=True)
+def mock_send_email_bg():
+    """
+    Automatically mock email sending for all tests.
+    
+    This fixture patches the `send_email` function from `email_service.background_tasks`
+    with a Mock object to prevent actual email sending during test execution.
+    The fixture is automatically applied to all tests (autouse=True).
+    
+    Yields:
+        Mock: A mock object that replaces the send_email function.
+    """
+    with patch("email_service.background_tasks.send_email", new=Mock()):
+        yield
