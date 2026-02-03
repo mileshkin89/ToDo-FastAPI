@@ -95,7 +95,42 @@ REDIS_DB=0
 
 # Environment
 ENVIRONMENT=development
+
+# SMTP / Email Service
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=<your_email@gmail.com>
+SMTP_PASSWORD=<your_app_password>
+SMTP_FROM=ToDo App <your_email@gmail.com>
 ```
+
+### 📧 Email Service Setup (Gmail SMTP)
+
+To enable email notifications, configure Gmail SMTP using App Password:
+
+1. **Go to Google Account Security**: https://myaccount.google.com/security
+   - Ensure you're logged in with the email you'll use for sending
+
+2. **Enable 2-Step Verification** (if not already enabled)
+   - In "Signing in to Google" section, find "2-Step Verification" and enable it
+   - 📌 App Password option won't appear without 2FA
+
+3. **Navigate to App Passwords**
+   - In Security section, open "App passwords" (may require password confirmation)
+
+4. **Create App Password**
+   - Select app: **Mail**
+   - Select device: **Other (Custom)**
+   - Enter name: **FastAPI ToDo SMTP**
+   - Click **Generate**
+
+5. **Copy the password**
+   - Google will show: `abcd efgh ijkl mnop`
+   - ⚠️ Copy without spaces - Google won't show it again
+
+6. **Add to `.env`**
+   - Replace `your_email@gmail.com` with your Gmail address
+   - Replace `your_app_password` with the copied App Password (no spaces)
 
 4. Build and start the containers:
 ```bash

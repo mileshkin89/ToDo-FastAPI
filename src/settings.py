@@ -42,6 +42,13 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_DB: int
 
+    # email service
+    SMTP_HOST: str
+    SMTP_PORT: int = 587
+    SMTP_USER: str
+    SMTP_PASSWORD: str
+    SMTP_FROM: str
+
     # Pydantic configuration
     model_config = SettingsConfigDict(
         env_file=get_env_file(),

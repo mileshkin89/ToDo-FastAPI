@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -21,6 +21,7 @@ from apps.auth.utils import set_refresh_token_cookie
 from apps.schemas import Token, UserCreate, UserResponse
 from database.db import get_db
 from database.models import User
+from email_service.background_tasks import send_notification
 
 auth_router = APIRouter()
 
@@ -35,7 +36,8 @@ auth_router = APIRouter()
 )
 async def register(
         user: UserCreate,
-        db: AsyncSession = Depends(get_db)
+        background_tasks: BackgroundTasks,
+        db: AsyncSession = Depends(get_db),
 ):
     existing_user = await get_user_by_email(user.email, db)
 
@@ -52,6 +54,8 @@ async def register(
     db.add(user_db)
     await db.commit()
     await db.refresh(user_db)
+
+    background_tasks.add_task(send_notification, user_db.email, user_db.name)
 
     return user_db
 
