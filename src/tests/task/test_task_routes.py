@@ -1,7 +1,10 @@
+from datetime import datetime
+
 import pytest
 from starlette import status
 
 from app import api_version_prefix
+from database.models import Task
 
 
 @pytest.mark.asyncio
@@ -183,3 +186,117 @@ async def test_delete_task_forbidden_for_other_user(
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_create_task_forbidden_for_inactive_user(
+    client,
+    inactive_access_token,
+):
+    """Ensure inactive users cannot create tasks."""
+    payload = {
+        "title": "New Task",
+        "description": "Task description",
+    }
+
+    response = await client.post(
+        f"{api_version_prefix}/tasks",
+        json=payload,
+        headers={"Authorization": f"Bearer {inactive_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "not active" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_update_task_forbidden_for_inactive_user(
+    client,
+    inactive_access_token,
+    db_session,
+    inactive_user,
+):
+    """Ensure inactive users cannot update tasks."""
+    task = Task(
+        title="Inactive User Task",
+        description="Task description",
+        completed=False,
+        user_id=inactive_user.id,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+    )
+
+    db_session.add(task)
+    await db_session.commit()
+    await db_session.refresh(task)
+
+    payload = {"title": "Updated title"}
+
+    response = await client.put(
+        f"{api_version_prefix}/tasks/{task.id}",
+        json=payload,
+        headers={"Authorization": f"Bearer {inactive_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "not active" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_toggle_task_forbidden_for_inactive_user(
+    client,
+    inactive_access_token,
+    db_session,
+    inactive_user,
+):
+    """Ensure inactive users cannot toggle task completion status."""
+    task = Task(
+        title="Inactive User Task",
+        description="Task description",
+        completed=False,
+        user_id=inactive_user.id,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+    )
+
+    db_session.add(task)
+    await db_session.commit()
+    await db_session.refresh(task)
+
+    response = await client.patch(
+        f"{api_version_prefix}/tasks/{task.id}/toggle",
+        headers={"Authorization": f"Bearer {inactive_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "not active" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_delete_task_forbidden_for_inactive_user(
+    client,
+    inactive_access_token,
+    db_session,
+    inactive_user,
+):
+    """Ensure inactive users cannot delete tasks."""
+    task = Task(
+        title="Inactive User Task",
+        description="Task description",
+        completed=False,
+        user_id=inactive_user.id,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+    )
+
+    db_session.add(task)
+    await db_session.commit()
+    await db_session.refresh(task)
+
+    response = await client.delete(
+        f"{api_version_prefix}/tasks/{task.id}",
+        headers={"Authorization": f"Bearer {inactive_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "not active" in response.json()["detail"].lower()

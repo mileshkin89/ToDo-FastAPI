@@ -82,3 +82,16 @@ async def authenticate_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user_db
+
+
+async def active_user_required(
+        current_user: User = Depends(get_current_user),
+) -> User:
+    """Require active user for access."""
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Curren User Account is not active",
+        )
+
+    return current_user

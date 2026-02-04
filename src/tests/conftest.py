@@ -211,6 +211,34 @@ def admin_access_token(admin_user: User) -> str:
     return create_access_token(data)
 
 
+@pytest.fixture
+async def inactive_user(db_session: AsyncSession, pwd_context: CryptContext) -> User:
+    """Create and return an inactive test user."""
+    hashed_password = pwd_context.hash("inactivepassword123")
+    
+    user = User(
+        email="inactive@example.com",
+        name="Inactive User",
+        hashed_password=hashed_password,
+        is_active=False,
+        is_superuser=False,
+        registered_at=datetime.utcnow(),
+    )
+    
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    
+    return user
+
+
+@pytest.fixture
+def inactive_access_token(inactive_user: User) -> str:
+    """Generate a valid access token for inactive_user."""
+    data = {"sub": str(inactive_user.id)}
+    return create_access_token(data)
+
+
 @pytest.fixture(autouse=True)
 def mock_send_email_bg():
     """

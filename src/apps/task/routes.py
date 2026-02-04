@@ -7,7 +7,7 @@ from starlette import status
 
 from apps.analytics.cache import AnalyticsCacheInvalidator
 from apps.analytics.dependencies import get_cache_invalidator
-from apps.auth.dependencies import get_current_user
+from apps.auth.dependencies import active_user_required, get_current_user
 from apps.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
 from database.db import get_db
 from database.models import Task, User
@@ -81,6 +81,7 @@ async def task_list(
 
 @task_router.post(
     "/tasks",
+    dependencies=[Depends(active_user_required)],
     response_model=TaskResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create new task",
@@ -96,7 +97,9 @@ async def create_task(
     task_db = Task(
         title=task.title,
         description=task.description,
-        user_id=current_user.id
+        user_id=current_user.id,
+        start_at=task.start_at,
+        due_date=task.due_date,
     )
 
     db.add(task_db)
@@ -124,6 +127,7 @@ async def read_task(
 
 @task_router.put(
     "/tasks/{task_id}",
+    dependencies=[Depends(active_user_required)],
     response_model=TaskResponse,
     status_code=status.HTTP_200_OK,
     summary="Update task",
@@ -152,6 +156,7 @@ async def update_task(
 
 @task_router.patch(
     "/tasks/{task_id}/toggle",
+    dependencies=[Depends(active_user_required)],
     response_model=TaskResponse,
     status_code=status.HTTP_200_OK,
     summary="Toggle task completion status",
@@ -177,6 +182,7 @@ async def toggle_task(
 
 @task_router.delete(
     "/tasks/{task_id}",
+    dependencies=[Depends(active_user_required)],
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete task",
     description="Delete a task. Only the task owner can delete their tasks. Admins cannot delete tasks belonging to other users. Invalidates user analytics cache.",

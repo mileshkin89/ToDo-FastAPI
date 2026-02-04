@@ -21,7 +21,7 @@ from apps.auth.utils import set_refresh_token_cookie
 from apps.schemas import Token, UserCreate, UserResponse
 from database.db import get_db
 from database.models import User
-from email_service.background_tasks import send_notification
+from email_service.background_tasks import send_registration_email
 
 auth_router = APIRouter()
 
@@ -55,7 +55,7 @@ async def register(
     await db.commit()
     await db.refresh(user_db)
 
-    background_tasks.add_task(send_notification, user_db.email, user_db.name)
+    background_tasks.add_task(send_registration_email, user_db.email, user_db.name)
 
     return user_db
 

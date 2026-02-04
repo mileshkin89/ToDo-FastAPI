@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -8,6 +8,10 @@ from apps.auth.dependencies import get_user_by_id
 from apps.schemas import TaskByUserResponse, UserListResponse, UserResponse
 from database.db import get_db
 from database.models import Task, User
+from email_service.background_tasks import (
+    send_activate_account_email,
+    send_deactivate_account_email,
+)
 
 admin_router = APIRouter()
 
@@ -111,6 +115,7 @@ async def get_user(
     response_description="Updated user information"
 )
 async def deactivate_user(
+        background_tasks: BackgroundTasks,
         user: User | None = Depends(get_user_by_id),
         db: AsyncSession = Depends(get_db)
 ):
@@ -119,6 +124,8 @@ async def deactivate_user(
 
     user.is_active = False
     await db.commit()
+
+    background_tasks.add_task(send_deactivate_account_email, user.email, user.name)
 
     return user
 
@@ -133,6 +140,7 @@ async def deactivate_user(
     response_description="Updated user information"
 )
 async def activate_user(
+        background_tasks: BackgroundTasks,
         user: User | None = Depends(get_user_by_id),
         db: AsyncSession = Depends(get_db)
 ):
@@ -141,6 +149,8 @@ async def activate_user(
 
     user.is_active = True
     await db.commit()
+
+    background_tasks.add_task(send_activate_account_email, user.email, user.name)
 
     return user
 

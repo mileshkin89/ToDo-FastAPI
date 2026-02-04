@@ -6,6 +6,7 @@ from starlette import status
 
 from app import app
 from apps.auth.dependencies import (
+    active_user_required,
     authenticate_user,
     get_current_user,
     get_user_by_email,
@@ -171,9 +172,81 @@ async def test_get_current_user_invalid_token(client, token, expected_detail):
 
 @pytest.mark.asyncio
 async def test_get_current_user_no_token(
-        client: AsyncClient,
+    client: AsyncClient,
 ):
     """Ensure get_current_user rejects requests without a token."""
     response = await client.get("/test-current-user")
 
     assert response.status_code == 401
+
+
+@app.get("/test-active-user")
+async def _test_active_user_endpoint(
+    current_user: User = Depends(active_user_required),
+):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "is_active": current_user.is_active,
+    }
+
+
+@pytest.mark.asyncio
+async def test_active_user_required_success(
+    client,
+    valid_access_token,
+    test_user,
+):
+    """Test that active_user_required allows access for active users."""
+    response = await client.get(
+        "/test-active-user",
+        headers={"Authorization": f"Bearer {valid_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    data = response.json()
+    assert data["id"] == test_user.id
+    assert data["email"] == test_user.email
+    assert data["is_active"] is True
+
+
+@pytest.mark.asyncio
+async def test_active_user_required_forbidden_for_inactive_user(
+    client,
+    inactive_access_token,
+    inactive_user,
+):
+    """Test that active_user_required rejects access for inactive users."""
+    response = await client.get(
+        "/test-active-user",
+        headers={"Authorization": f"Bearer {inactive_access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "not active" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_active_user_required_direct_call_success(
+    test_user: User,
+):
+    """Test that active_user_required returns active user when called directly."""
+    # Pass current_user directly, bypassing Depends
+    result = await active_user_required(current_user=test_user)
+
+    assert result.id == test_user.id
+    assert result.is_active is True
+
+
+@pytest.mark.asyncio
+async def test_active_user_required_direct_call_forbidden(
+    inactive_user: User,
+):
+    """Test that active_user_required raises HTTPException for inactive users."""
+    # Pass current_user directly, bypassing Depends
+    with pytest.raises(HTTPException) as exc:
+        await active_user_required(current_user=inactive_user)
+
+    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
+    assert "not active" in exc.value.detail.lower()
