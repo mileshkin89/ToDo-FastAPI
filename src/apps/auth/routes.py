@@ -1,13 +1,23 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
-from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Cookie,
+    Depends,
+    HTTPException,
+    Response,
+)
+from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from apps.auth.dependencies import (
+    active_user_required,
     authenticate_user,
     get_current_user,
+    get_reset_token,
     get_user_by_email,
     get_user_by_id,
     pwd_context,
@@ -17,11 +27,27 @@ from apps.auth.jwt import (
     create_refresh_token,
     verify_refresh_token,
 )
+from apps.auth.reset_token import (
+    create_reset_password_link,
+    create_reset_password_token,
+)
 from apps.auth.utils import set_refresh_token_cookie
-from apps.schemas import Token, UserCreate, UserResponse
+from apps.schemas import (
+    ChangePassword,
+    ResetPasswordConfirm,
+    ResetPasswordRequest,
+    Token,
+    UserCreate,
+    UserResponse,
+)
 from database.db import get_db
-from database.models import User
-from email_service.background_tasks import send_registration_email
+from database.models import ResetPasswordToken, User
+from email_service.background_tasks import (
+    send_change_password_email,
+    send_registration_email,
+    send_reset_password_email,
+)
+from settings import BASE_DIR
 
 auth_router = APIRouter()
 
@@ -150,3 +176,132 @@ async def logout(
     response.delete_cookie(key="refresh_token")
 
     return {"message": "Successfully logged out"}
+
+
+@auth_router.post(
+    "/change_password",
+    summary="Change user password",
+    description=(
+        "Change the password for the currently authenticated user. "
+        "The user must provide their current password and a new password. "
+        "An email notification is sent after a successful password change. "
+        "Requires authentication and an active user account."
+    ),
+    response_description="Password change confirmation message",
+    dependencies=[Depends(active_user_required)],
+    status_code=status.HTTP_200_OK,
+)
+async def change_password(
+        password: ChangePassword,
+        background_tasks: BackgroundTasks,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+):
+    if not pwd_context.verify(password.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password",
+        )
+
+    current_user.hashed_password = pwd_context.hash(password.new_password)
+    await db.commit()
+
+    background_tasks.add_task(send_change_password_email, current_user.email, current_user.name)
+
+    return {"message": "Password successfully changed."}
+
+
+@auth_router.post(
+    "/reset_password/request",
+    summary="Request password reset",
+    description=(
+        "Request a password reset email for a user account. "
+        "If the email address is associated with an existing account, "
+        "a password reset link will be sent. "
+        "The response is the same regardless of whether the account exists."
+    ),
+    response_description="Password reset request result message",
+    status_code=status.HTTP_200_OK,
+)
+async def reset_password_request(
+        payload: ResetPasswordRequest,
+        background_tasks: BackgroundTasks,
+        db: AsyncSession = Depends(get_db),
+):
+    user = await get_user_by_email(payload.email, db)
+
+    if user:
+        token = await create_reset_password_token(user, db)
+        link = create_reset_password_link(token)
+        background_tasks.add_task(
+            send_reset_password_email,
+            payload.email,
+            link,
+        )
+
+    return {
+        "message": "If the account exists, you will receive an email."
+    }
+
+
+@auth_router.get(
+    "/reset_password",
+    summary="Get password reset form",
+    description=(
+        "Serve the HTML password reset form. "
+        "The user accesses this endpoint via the password reset link "
+        "received by email, which contains a reset token as a query parameter. "
+        "In production, this endpoint should be replaced with a frontend URL."
+    ),
+    response_description="HTML password reset form",
+    response_class=HTMLResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def reset_password_form():
+    frontend_dir = BASE_DIR / "frontend"
+    html_file = frontend_dir / "reset-password.html"
+    
+    if not html_file.exists():
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Password reset form not found"
+        )
+    
+    with open(html_file, "r", encoding="utf-8") as f:
+        html_content = f.read()
+    
+    return HTMLResponse(content=html_content)
+
+
+@auth_router.post(
+    "/reset_password/confirm",
+    summary="Confirm password reset",
+    description=(
+        "Confirm a password reset using a one-time reset token. "
+        "The token must be valid, not expired, and unused. "
+        "After a successful reset, the token is invalidated and "
+        "an email notification is sent to the user."
+    ),
+    response_description="Password reset confirmation message",
+    status_code=status.HTTP_200_OK,
+)
+async def reset_password_confirm(
+        payload: ResetPasswordConfirm,
+        background_tasks: BackgroundTasks,
+        reset_token: ResetPasswordToken = Depends(get_reset_token),
+        db: AsyncSession = Depends(get_db),
+):
+    user = reset_token.user
+    user.hashed_password = pwd_context.hash(payload.new_password)
+
+    reset_token.used_at = datetime.now(UTC)
+
+    await db.commit()
+
+    background_tasks.add_task(
+        send_change_password_email,
+        user.email,
+        user.name,
+    )
+
+    return {"message": "Password has been successfully reset"}

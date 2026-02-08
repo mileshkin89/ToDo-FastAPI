@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from apps.admin.routes import admin_router
 from apps.analytics.routes import analytics_router
@@ -10,6 +11,13 @@ from apps.task.routes import task_router
 from database.db import close_db
 from database.models import User
 from infrastructure.redis.client import cleanup_pool
+from settings import (
+    BASE_DIR,
+    admin_prefix,
+    analytics_prefix,
+    api_version_prefix,
+    auth_prefix,
+)
 
 
 @asynccontextmanager
@@ -48,10 +56,13 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-api_version_prefix = "/api/v1"
-admin_prefix = "/admin"
-auth_prefix = "/auth"
-analytics_prefix = "/analytics"
+# Mount static files
+app.mount(
+    "/static",
+    StaticFiles(directory=BASE_DIR / "frontend", html=False),
+    name="static",
+)
+
 app.include_router(admin_router, prefix=f"{api_version_prefix}{admin_prefix}", tags=["admin"])
 app.include_router(auth_router, prefix=f"{api_version_prefix}{auth_prefix}", tags=["auth"])
 app.include_router(task_router, prefix=f"{api_version_prefix}", tags=["tasks"])

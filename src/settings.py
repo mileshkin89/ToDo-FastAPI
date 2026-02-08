@@ -6,6 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR: Path = Path(__file__).parent.parent
 
+api_version_prefix = "/api/v1"
+admin_prefix = "/admin"
+auth_prefix = "/auth"
+analytics_prefix = "/analytics"
+
 
 class Environment(str, Enum):
     DEVELOPMENT = "development"
@@ -21,6 +26,8 @@ def get_env_file() -> str:
 
 
 class Settings(BaseSettings):
+    BASE_URL: str
+
     PASSWORD_HASH_SCHEME: str = "argon2"
 
     # PostgreSQL / Database
@@ -36,6 +43,9 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # Reset password token / Auth
+    RESET_TOKEN_TTL_MINUTES: int = 15
 
     # Redis
     REDIS_HOST: str

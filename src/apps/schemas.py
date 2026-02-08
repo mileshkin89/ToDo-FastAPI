@@ -11,6 +11,88 @@ class Token(BaseModel):
     token_type: str = Field(description="Token type, typically 'bearer'")
 
 
+class ChangePassword(BaseModel):
+    """Schema for changing the current user's password."""
+    current_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="Current user password (minimum 5 characters)",
+    )
+    new_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="New user password (minimum 5 characters)",
+    )
+    repeat_new_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="Password confirmation (must match new_password)",
+    )
+
+    @model_validator(mode="after")
+    def passwords_match(self):
+        """Validate that new_password and repeat_new_password match."""
+        if self.new_password != self.repeat_new_password:
+            raise ValueError("New passwords do not match")
+        return self
+
+
+class ResetPasswordRequest(BaseModel):
+    """Schema for requesting a password reset email."""
+
+    email: EmailStr = Field(
+        max_length=100,
+        description="User email address associated with the account",
+    )
+
+
+class ResetPasswordByFrontend(BaseModel):
+    """Schema for resetting a password via the frontend form."""
+
+    new_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="New user password (minimum 5 characters)",
+    )
+    repeat_new_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="Password confirmation (must match new_password)",
+    )
+
+    @model_validator(mode="after")
+    def passwords_match(self):
+        """Validate that new_password and repeat_new_password match."""
+        if self.new_password != self.repeat_new_password:
+            raise ValueError("New passwords do not match")
+        return self
+
+
+class ResetPasswordConfirm(BaseModel):
+    """Schema for confirming a password reset using a reset token."""
+
+    token: str = Field(
+        description="One-time password reset token received via email",
+    )
+    new_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="New user password (minimum 5 characters)",
+    )
+    repeat_new_password: str = Field(
+        min_length=5,
+        max_length=100,
+        description="Password confirmation (must match new_password)",
+    )
+
+    @model_validator(mode="after")
+    def passwords_match(self):
+        """Validate that new_password and repeat_new_password match."""
+        if self.new_password != self.repeat_new_password:
+            raise ValueError("New passwords do not match")
+        return self
+
+
 # User Schemas
 class UserCreate(BaseModel):
     """Schema for user registration."""
@@ -65,7 +147,8 @@ class TaskByUserResponse(BaseModel):
 class TaskCreate(BaseModel):
     """Schema for creating a new task."""
     title: str = Field(max_length=150, description="Task title (max 150 characters)")
-    description: str | None = Field(default=None, max_length=500, description="Task description (optional, max 500 characters)")
+    description: str | None = Field(default=None, max_length=500,
+                                    description="Task description (optional, max 500 characters)")
     completed: bool = Field(default=False, description="Task completion status (default: false)")
     start_at: datetime | None = Field(default=None, description="Task start date and time (optional)")
     due_date: datetime | None = Field(default=None, description="Task due date and time (optional)")
@@ -74,7 +157,8 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     """Schema for updating an existing task. All fields are optional."""
     title: str | None = Field(default=None, max_length=150, description="Task title (optional, max 150 characters)")
-    description: str | None = Field(default=None, max_length=500, description="Task description (optional, max 500 characters)")
+    description: str | None = Field(default=None, max_length=500,
+                                    description="Task description (optional, max 500 characters)")
     start_at: datetime | None = Field(default=None, description="Task start date and time (optional)")
     due_date: datetime | None = Field(default=None, description="Task due date and time (optional)")
 
@@ -88,7 +172,8 @@ class TaskResponse(BaseModel):
     created_at: datetime = Field(description="Task creation timestamp")
     updated_at: datetime = Field(description="Task last update timestamp")
     start_at: datetime | None = Field(default=None, description="Task start date and time")
-    completed_at: datetime | None = Field(default=None, description="Task completion timestamp (set when task is marked as completed)")
+    completed_at: datetime | None = Field(default=None,
+                                          description="Task completion timestamp (set when task is marked as completed)")
     due_date: datetime | None = Field(default=None, description="Task due date and time")
 
     model_config = {

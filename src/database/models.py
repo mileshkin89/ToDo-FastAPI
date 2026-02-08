@@ -1,9 +1,34 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy import DateTime, ForeignKey, Index, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.db import Base
+
+
+class ResetPasswordToken(Base):
+    """ResetPasswordToken model using to reset users password"""
+    __tablename__ = "reset_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    token_hash: Mapped[str] = mapped_column(unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None, nullable=True)
+
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE")
+    )
+
+    user: Mapped["User"] = relationship(back_populates="reset_tokens")
+
+    __table_args__ = (
+        Index(
+            "uq_active_reset_token_per_user",
+            "user_id",
+            unique=True,
+            postgresql_where=text("used_at IS NULL"),
+        ),
+    )
 
 
 class User(Base):
@@ -28,6 +53,10 @@ class User(Base):
     tasks: Mapped[list["Task"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan"
+    )
+
+    reset_tokens: Mapped[list[ResetPasswordToken]] = relationship(
+        back_populates="user",
     )
 
 

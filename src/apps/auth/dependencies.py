@@ -1,16 +1,21 @@
+from datetime import UTC, datetime
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from database.db import get_db
-from database.models import User
-from settings import settings
+from database.models import ResetPasswordToken, User
+from settings import api_version_prefix, auth_prefix, settings
 
+from ..schemas import ResetPasswordConfirm
 from .jwt import verify_access_token
+from .reset_token import hash_token
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{api_version_prefix}{auth_prefix}/token")
 
 pwd_context = CryptContext(schemes=[settings.PASSWORD_HASH_SCHEME], deprecated="auto")
 
@@ -95,3 +100,32 @@ async def active_user_required(
         )
 
     return current_user
+
+
+async def get_reset_token(
+        payload: ResetPasswordConfirm,
+        db: AsyncSession = Depends(get_db),
+) -> ResetPasswordToken:
+    """Get a reset password token."""
+    token_hash = hash_token(payload.token)
+
+    stmt = (
+        select(ResetPasswordToken)
+        .options(selectinload(ResetPasswordToken.user))
+        .where(
+            ResetPasswordToken.token_hash == token_hash,
+            ResetPasswordToken.used_at.is_(None),
+            ResetPasswordToken.expires_at > datetime.now(UTC),
+        )
+    )
+
+    result = await db.execute(stmt)
+    reset_token = result.scalar_one_or_none()
+
+    if not reset_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token",
+        )
+
+    return reset_token
