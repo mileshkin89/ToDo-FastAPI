@@ -1,0 +1,45 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.number {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.sub {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.periodSelect {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.status {
+  color: var(--color-text-muted);
+  padding: 24px;
+}
+
+.aggregated {
+  margin-top: 24px;
+}
+
+.pre {
+  font-size: 12px;
+  overflow: auto;
+  max-height: 300px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: var(--radius-sm);
+}

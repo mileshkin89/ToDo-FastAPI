@@ -93,5 +93,6 @@ async def protected_route(current_user: User = Depends(get_current_user)):
     return {
         "message": "This is a protected route",
         "user_email": current_user.email,
-        "user_id": current_user.id
+        "user_id": current_user.id,
+        "is_superuser": current_user.is_superuser,
     }

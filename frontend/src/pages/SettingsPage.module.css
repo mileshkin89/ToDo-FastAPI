@@ -1,0 +1,31 @@
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--color-text);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 400px;
+}
+
+.errorBanner {
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--color-error);
+  font-size: 14px;
+  border-radius: var(--radius-md);
+}
+
+.successBanner {
+  padding: 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: var(--color-success);
+  font-size: 14px;
+  border-radius: var(--radius-md);
+}

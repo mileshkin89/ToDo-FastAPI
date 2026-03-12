@@ -1,0 +1,140 @@
+.toolbar {
+  margin-bottom: 20px;
+}
+
+.search {
+  max-width: 320px;
+}
+
+.status {
+  color: var(--color-text-muted);
+  padding: 16px 0;
+}
+
+.errorBanner {
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--color-error);
+  font-size: 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ul {
+  list-style: none;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.userRow:hover {
+  background: #f3f4f6;
+}
+
+.userRow.selected {
+  background: rgba(91, 107, 240, 0.12);
+}
+
+.userEmail {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badgeActive,
+.badgeInactive {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.badgeActive {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badgeInactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pageInfo {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.detailTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.actions {
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+
+.tasksTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.taskList {
+  list-style: none;
+}
+
+.taskItem {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.taskDone {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.taskMeta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}

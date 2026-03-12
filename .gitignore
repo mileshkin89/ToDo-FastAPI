@@ -207,3 +207,12 @@ marimo/_lsp/
 __marimo__/
 
 *.egg-info/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/tsconfig.tsbuildinfo
+frontend/tsconfig.node.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
